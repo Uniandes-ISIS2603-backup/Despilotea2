@@ -24,10 +24,12 @@ SOFTWARE.
 package co.edu.uniandes.csw.bookstore.persistence;
 
 import co.edu.uniandes.csw.bookstore.entities.BookEntity;
+import co.edu.uniandes.csw.bookstore.entities.FacturaEntity;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
@@ -47,6 +49,8 @@ public class BookPersistence {
     @PersistenceContext(unitName = "BookStorePU")
     protected EntityManager em;
 
+     @Inject
+    FacturaPersistence facturaPersistence;
     /**
      * Método para persisitir la entidad en la base de datos.
      *
@@ -58,6 +62,18 @@ public class BookPersistence {
         em.persist(bookEntity);
         LOGGER.log(Level.INFO, "Libro creado");
         return bookEntity;
+    }
+    
+        public BookEntity find(Long facturaId, Long id, Long clienteId) {
+        FacturaEntity fact = facturaPersistence.find(clienteId, facturaId);
+        if (fact != null) {
+            for (BookEntity dispositivo : fact.getBooks()) {
+                if (dispositivo.getId().equals(id)) {
+                    return dispositivo;
+                }
+            }
+        }
+        return null;
     }
 
     /**

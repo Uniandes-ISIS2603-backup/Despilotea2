@@ -28,6 +28,7 @@ import co.edu.uniandes.csw.bookstore.entities.BookEntity;
 import co.edu.uniandes.csw.bookstore.exceptions.BusinessLogicException;
 import co.edu.uniandes.csw.bookstore.persistence.BookPersistence;
 import co.edu.uniandes.csw.bookstore.persistence.EditorialPersistence;
+import co.edu.uniandes.csw.bookstore.persistence.FacturaPersistence;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,6 +50,9 @@ public class BookLogic {
 
     @Inject
     private EditorialPersistence editorialPersistence;
+    
+     @Inject
+    private FacturaPersistence fp;
 
     /**
      * Guardar un nuevo libro
@@ -72,6 +76,26 @@ public class BookLogic {
         persistence.create(bookEntity);
         LOGGER.log(Level.INFO, "Termina proceso de creación del libro");
         return bookEntity;
+    }
+    
+    
+    /**
+     * Busca una book por ID
+     *
+     * @param bookId El id de la book a buscar
+     * @param facturasId id del factura
+     * @param clienteId id del cliente
+     * @return La book encontrada, null si no la encuentra.
+     * @throws BusinessLogicException
+     */
+    public BookEntity getBook(Long facturasId, Long bookId, Long clienteId) throws BusinessLogicException {
+        List<BookEntity> book = fp.find(clienteId, facturasId).getBooks();
+        BookEntity bookEntity = persistence.find(facturasId, bookId, clienteId);
+        int index = book.indexOf(bookEntity);
+        if (index >= 0) {
+            return book.get(index);
+        }
+        throw new BusinessLogicException("La book no está asociada a el factura");
     }
 
     /**
