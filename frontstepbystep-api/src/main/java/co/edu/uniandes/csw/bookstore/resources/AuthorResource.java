@@ -52,7 +52,7 @@ import javax.ws.rs.WebApplicationException;
  * @author ISIS2603
  * @version 1.0
  */
-@Path("/authors")
+@Path("authors")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @RequestScoped
