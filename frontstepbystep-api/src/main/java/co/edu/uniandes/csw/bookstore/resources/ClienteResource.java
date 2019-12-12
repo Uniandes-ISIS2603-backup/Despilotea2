@@ -127,6 +127,14 @@ public class ClienteResource {
         return FacturaResource.class;
     }
     
+    @Path("{clienteId: \\d+}/medios")
+    public Class<MedioDePagoResource> getMedioResource(@PathParam("clienteId") Long clienteId) {
+        if (clienteLogic.getCliente(clienteId) == null) {
+            throw new WebApplicationException("El recurso /clientes/" + clienteId + "/facturas no existe.", 404);
+        }
+        return MedioDePagoResource.class;
+    }
+    
     @GET
     @Path("user/{clienteUsuario: \\w+}")
     public ClienteDTO getClienteUsuario(@PathParam("clienteUsuario") String clienteId) {
