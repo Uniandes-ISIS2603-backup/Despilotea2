@@ -5,8 +5,10 @@
  */
 package co.edu.uniandes.csw.bookstore.ejb;
 
+import co.edu.uniandes.csw.bookstore.entities.ClienteEntity;
 import co.edu.uniandes.csw.bookstore.entities.MedioDePagoEntity;
 import co.edu.uniandes.csw.bookstore.exceptions.BusinessLogicException;
+import co.edu.uniandes.csw.bookstore.persistence.ClientePersistence;
 import co.edu.uniandes.csw.bookstore.persistence.MedioDePagoPersistence;
 import java.util.List;
 import java.util.logging.Level;
@@ -25,9 +27,10 @@ public class MedioDePagoLogic {
 
     @Inject
     private MedioDePagoPersistence persistence;
+    @Inject
+    private ClientePersistence cp;
 
-    /**
-     * Guarda un nuevo medio de pago.
+    /* Guarda un nuevo medio de pago.
      *
      * @param medioDePagoEntity la entidad de tipo medio de pago que se desea
      * persistir.
@@ -35,13 +38,16 @@ public class MedioDePagoLogic {
      * @throws BusinessLogicException Si el numero es inválido o ya existe en la
      * persistencia.
      */
-    public MedioDePagoEntity createMedioDePago(MedioDePagoEntity medioDePagoEntity) throws BusinessLogicException {
+    public MedioDePagoEntity createMedioDePago(Long clienteId, MedioDePagoEntity medioDePagoEntity) throws BusinessLogicException {
 
         LOGGER.log(Level.INFO, "Inicia proceso de creación de un medio de pago.");
 
         if (!verificarLasReglasNegocioMedioDePago(medioDePagoEntity)) {
             throw new BusinessLogicException("No pudo realizarse la creacion de un metodo de pago.");
         } else {
+            ClienteEntity cliente = cp.find(clienteId);
+            medioDePagoEntity.setCliente(cliente);
+            medioDePagoEntity = persistence.create(medioDePagoEntity);
             persistence.create(medioDePagoEntity);
             LOGGER.log(Level.INFO, "Termina proceso de creación de un medio de pago.");
             return medioDePagoEntity;
@@ -50,33 +56,19 @@ public class MedioDePagoLogic {
     }
 
     /**
+     * Busca una medioDePago por ID
      *
-     * Obtener todas los medios pago existentes en la base de datos.
-     *
-     * @return una lista de los medios de pago.
+     * @param medioDePagoId El id de la medioDePago a buscar
+     * @param clientesId id del cliente
+     * @return La medioDePago encontrada, null si no la encuentra.
+     * @throws BusinessLogicException
      */
-    public List<MedioDePagoEntity> getMediosDePago() {
-        LOGGER.log(Level.INFO, "Inicia proceso de consultar todos los medios de pago.");
-        List<MedioDePagoEntity> medios = persistence.findAll();
-        LOGGER.log(Level.INFO, "Termina proceso de consultar todos los medios de pago.");
-        return medios;
-    }
-
-    /**
-     *
-     * Obtener un medio de pago por medio de su id.
-     *
-     * @param pMedioId: id del medio de pago para ser buscada.
-     * @return El medio de pago solicitado por medio de su id.
-     */
-    public MedioDePagoEntity getMedioDePago(Long pMedioId) {
-        LOGGER.log(Level.INFO, "Inicia proceso de consultar el medio de pago con id = {0}", pMedioId);
-        MedioDePagoEntity medioEntity = persistence.find(pMedioId);
-        if (medioEntity == null) {
-            LOGGER.log(Level.SEVERE, "El medio de pago con el id = {0} no existe", pMedioId);
+    public MedioDePagoEntity getMedioDePago(Long clientesId, Long medioDePagoId) throws BusinessLogicException {
+        MedioDePagoEntity medioDePago = cp.find(clientesId).getMetodoDePago();
+        if (medioDePago != null) {
+            return medioDePago;
         }
-        LOGGER.log(Level.INFO, "Termina proceso el medio de pago con id = {0}", pMedioId);
-        return medioEntity;
+        throw new BusinessLogicException("La medioDePago no está asociada a el cliente");
     }
 
     /**
@@ -100,21 +92,23 @@ public class MedioDePagoLogic {
      * @return la medio de pago con los cambios actualizados en la base de
      * datos. Null en el caso de no poder actualizarla.
      */
-    public MedioDePagoEntity updateMedioDePago(MedioDePagoEntity medioPago) throws BusinessLogicException {
+    public MedioDePagoEntity updateMedioDePago(Long clienteId, MedioDePagoEntity medioPago) throws BusinessLogicException {
         LOGGER.log(Level.INFO, "Inicia proceso de actualizar un medio de pago.");
 
         if (!verificarLasReglasNegocioMedioDePago(medioPago)) {
             throw new BusinessLogicException("No puede ser actualizada el medio de pago.");
         } else {
-            persistence.update(medioPago);
+            ClienteEntity clienteEntity = cp.find(clienteId);
+            medioPago.setCliente(clienteEntity);
             LOGGER.log(Level.INFO, "Termina proceso de actualizar un medio de pago.");
-            return medioPago;
+            return persistence.update(medioPago);
+
         }
     }
 
     /**
-     * Verifica que el elemento enviado por parametro cumpla con cada una de las
-     * reglas de negocio establecidas.
+     * Verifica que el elemento enviado poLong clienteId,r parametro cumpla con
+     * cada una de las reglas de negocio establecidas.
      *
      * @param medioDePagoEntity El medio de pago que se desea verificar que
      * cumpla con cada una de las reglas de negocio.
@@ -148,7 +142,7 @@ public class MedioDePagoLogic {
         }
 
         try {
-                Integer.parseInt(medioDePagoEntity.getNumeroDeVerificacion());
+            Integer.parseInt(medioDePagoEntity.getNumeroDeVerificacion());
 
         } catch (Exception e) {
             throw new BusinessLogicException("La cantidad de numeros no corresponde con la esperada. Siendo " + medioDePagoEntity.getNumeroDeVerificacion().split("").length);
@@ -166,5 +160,13 @@ public class MedioDePagoLogic {
         }
 
         return true;
+    }
+
+    public void deleteMedioDePago(Long medioDePagoId, long clienteId) throws BusinessLogicException {
+        MedioDePagoEntity entity = getMedioDePago(clienteId, medioDePagoId);
+        if (entity == null) {
+            throw new BusinessLogicException("La medioDePago con id = " + medioDePagoId + " no esta asociada al cliente con id = " + clienteId);
+        }
+        persistence.delete(entity.getId());
     }
 }

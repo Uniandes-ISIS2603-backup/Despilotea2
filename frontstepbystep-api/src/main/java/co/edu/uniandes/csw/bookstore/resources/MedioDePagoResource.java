@@ -40,111 +40,12 @@ public class MedioDePagoResource {
     @Inject
     private MedioDePagoLogic medioLogic;
 
-    /**
-     * Crea un nuevo medio de pago con la informacion que se recibe en el cuerpo
-     * de la petición y se regresa un objeto identico con un id auto-generado
-     * por la base de datos.
-     *
-     * @param medio {@link MedioDepagoDTO} - El medio de pago que se desea
-     * guardar.
-     * @return JSON {@link MedioDePagoDTO} - El medio de pago guardada con el
-     * atributo id autogenerado.
-     * @throws BusinessLogicException {@link BusinessLogicExceptionMapper} -
-     * Error de lógica que se genera cuando ya existe el medio de pago.
-     */
     @POST
-    public MedioDePagoDTO createMedioDePago(MedioDePagoDTO medio) throws BusinessLogicException {
-        LOGGER.log(Level.INFO, "MedioDePagoResource createMedioDePago: input: {0}", medio);
-        MedioDePagoEntity medioEntity = medio.toEntity();
-        MedioDePagoEntity nuevoMedioEntity = medioLogic.createMedioDePago(medioEntity);
-        MedioDePagoDTO nuevoMedioDTO = new MedioDePagoDTO(nuevoMedioEntity);
+    public MedioDePagoDTO createMedioDePago(@PathParam("clienteId") Long clienteId, MedioDePagoDTO medioDePago) throws BusinessLogicException {
+        LOGGER.log(Level.INFO, "MedioDePagoResource createMedioDePago: input: {0}", medioDePago);
+        MedioDePagoDTO nuevoMedioDTO = new MedioDePagoDTO(medioLogic.createMedioDePago(clienteId, medioDePago.toEntity()));
         LOGGER.log(Level.INFO, "MedioDePagoResource createMedioDePago: output: {0}", nuevoMedioDTO);
         return nuevoMedioDTO;
-    }
-
-    /**
-     * Busca y devuelve todas los medio de pago que existen en la aplicacion.
-     *
-     * @return JSONArray {@link MedioDePagoDetailDTO} - Las editoriales
-     * encontradas en la aplicación. Si no hay ninguna retorna una lista vacía.
-     */
-    /**
-     * Busca el medio de pago con el id asociado recibido en la URL y la
-     * devuelve.
-     *
-     * @param medioId Identificador del medio de pago que se esta buscando. Este
-     * debe ser una cadena de dígitos.
-     * @return JSON {@link MedioDePagoDTO} - El medio de pago buscada
-     * @throws WebApplicationException {@link WebApplicationExceptionMapper} -
-     * Error de lógica que se genera cuando no se encuentra el medio de pago.
-     */
-    @GET
-    @Path("{medioId: \\d+}")
-    public MedioDePagoDTO getMedioDePagos(@PathParam("medioId") Long medioId) throws WebApplicationException {
-        LOGGER.log(Level.INFO, "MedioDePagoResource getMedioDePago: input: {0}", medioId);
-        MedioDePagoEntity mediopEntity = medioLogic.getMedioDePago(medioId);
-        if (mediopEntity == null) {
-            throw new WebApplicationException("El recurso /mediosGet/" + medioId + " no existe 1.", 404);
-        }
-        MedioDePagoDTO detailDTO = new MedioDePagoDTO(mediopEntity);
-        LOGGER.log(Level.INFO, "MedioDePagoResource getMedioDePago: output: {0}", detailDTO);
-        return detailDTO;
-    }
-
-    /**
-     * Actualiza el medio de pago con el id recibido en la URL con la
-     * informacion que se recibe en el cuerpo de la petición.
-     *
-     * @param medioId Identificador del medio de pago que se desea actualizar.
-     * Este debe ser una cadena de dígitos.
-     * @param medio {@link MedioDePagoDTO} El medio de pago que se desea
-     * guardar.
-     * @return JSON {@link MedioDePagoDetailDTO} - El medio de pago guardada.
-     * @throws WebApplicationException {@link WebApplicationExceptionMapper} -
-     * Error de lógica que se genera cuando no se encuentra el medio de pago a
-     * actualizar.
-     */
-    @PUT
-    @Path("{mediosId: \\d+}")
-    public MedioDePagoDTO updateMedioDePago(@PathParam("mediosId") Long medioId, MedioDePagoDTO medio) throws WebApplicationException, BusinessLogicException {
-        LOGGER.log(Level.INFO, "MedioDePagoResource updateMedioDePago: input: id:{0} , medio de pago: {1}", new Object[]{medioId, medio});
-        medio.setId(medioId);
-        if (medioLogic.getMedioDePago(medioId) == null) {
-            throw new WebApplicationException("El recurso /mediosUpdate/" + medioId + " no existe 2.", 404);
-        }
-        MedioDePagoDTO detailDTO = new MedioDePagoDTO(medioLogic.updateMedioDePago(medio.toEntity()));
-        LOGGER.log(Level.INFO, "MedioDePagoResource updateMedioDePago: output: {0}", detailDTO);
-        return detailDTO;
-    }
-
-    /**
-     * Borra el medio de pago con el id asociado recibido en la URL.
-     *
-     * @param medioId Identificador del medio de pago que se desea borrar. Este
-     * debe ser una cadena de dígitos.
-     * @throws BusinessLogicException {@link BusinessLogicExceptionMapper} -
-     * Error de lógica que se genera cuando no se puede eliminar el medio de
-     * pago.
-     * @throws WebApplicationException {@link WebApplicationExceptionMapper} -
-     * Error de lógica que se genera cuando no se encuentra el medio de pago.
-     */
-    @DELETE
-    @Path("{mediosId: \\d+}")
-    public void deleteMedioDePago(@PathParam("mediosId") Long medioId) throws BusinessLogicException {
-        LOGGER.log(Level.INFO, "MedioDePagoResource deleteMedioDePago: input: {0}", medioId);
-        if (medioLogic.getMedioDePago(medioId) == null) {
-            throw new WebApplicationException("El recurso /mediosDelete/" + medioId + " no existe 3.", 404);
-        }
-        medioLogic.deleteMedioDePago(medioId);
-        LOGGER.info("MedioDePagoResource deleteMedioDePago: output: void");
-    }
-
-    @GET
-    public List<MedioDePagoDTO> getMediosDePago() {
-        LOGGER.info("MedioDePagoResource getMediosDePago: input: void");
-        List<MedioDePagoDTO> listaMedioPago = listEntity2DetailDTO(medioLogic.getMediosDePago());
-        LOGGER.log(Level.INFO, "MedioDePagoResource getMedioDePago: output: {0}", listaMedioPago);
-        return listaMedioPago;
     }
 
     private List<MedioDePagoDTO> listEntity2DetailDTO(List<MedioDePagoEntity> entityList) {
@@ -153,5 +54,58 @@ public class MedioDePagoResource {
             list.add(new MedioDePagoDTO(entity));
         }
         return list;
+    }
+
+    @GET
+    @Path("{medioDePagoId: \\d+}")
+    public MedioDePagoDTO getMedioDePago(@PathParam("clienteId") Long clienteId, @PathParam("medioDePagoId") Long medioDePagoId) throws BusinessLogicException {
+        LOGGER.log(Level.INFO, "MedioDePagoDePagoResource getMedioDePagos: input: {0}", medioDePagoId);
+        MedioDePagoEntity medioDePagoEntity = medioLogic.getMedioDePago(clienteId, medioDePagoId);
+        if (medioDePagoEntity == null) {
+            throw new WebApplicationException("El recurso /clientes/" + clienteId + "/medioDePago/" + medioDePagoId + " no existe.", 404);
+        }
+        MedioDePagoDTO medioDePagoDetail = new MedioDePagoDTO(medioDePagoEntity);
+        LOGGER.log(Level.INFO, "MedioDePagoDePagoResource getMedioDePagos: output: {0}", medioDePagoDetail);
+        return medioDePagoDetail;
+    }
+
+    /**
+     *
+     * @param clienteId
+     * @param medioDePagoId
+     * @param medioDePago
+     * @return
+     * @throws BusinessLogicException
+     */
+    @PUT
+    @Path("{medioDePagoId: \\d+}")
+    public MedioDePagoDTO updateMedioDePago(@PathParam("clienteId") Long clienteId, @PathParam("medioDePagoId") Long medioDePagoId, MedioDePagoDTO medioDePago) throws BusinessLogicException {
+        LOGGER.log(Level.INFO, "MedioDePagoResource updateMedioDePago: input: clienteId: {0} , medioDePagoId: {1} , medioDePago:{2}", new Object[]{clienteId, medioDePagoId, medioDePago});
+        if (!medioDePagoId.equals(medioDePago.getId())) {
+            throw new BusinessLogicException("Los ids del medioDePago no coinciden.");
+        }
+        MedioDePagoEntity entity = medioLogic.getMedioDePago(clienteId, medioDePagoId);
+        if (entity == null) {
+            throw new WebApplicationException("El recurso /clientes/" + clienteId + "/medioDePago/" + medioDePagoId + " no existe.", 404);
+        }
+        MedioDePagoDTO medioDePagoDTO = new MedioDePagoDTO(medioLogic.updateMedioDePago(clienteId, medioDePago.toEntity()));
+        LOGGER.log(Level.INFO, "MedioDePagoResource updateMedioDePago: output:{0}", medioDePagoDTO);
+        return medioDePagoDTO;
+    }
+
+    /**
+     *
+     * @param clienteId
+     * @param medioDePagoId
+     * @throws BusinessLogicException
+     */
+    @DELETE
+    @Path("{medioDePagoId: \\d+}")
+    public void deleteMedioDePago(@PathParam("clienteId") Long clienteId, @PathParam("medioDePagoId") Long medioDePagoId) throws BusinessLogicException {
+        MedioDePagoEntity entity = medioLogic.getMedioDePago(clienteId, medioDePagoId);
+        if (entity == null) {
+            throw new WebApplicationException("El recurso /clientes/" + clienteId + "/medioDePago/" + medioDePagoId + " no existe.", 404);
+        }
+        medioLogic.deleteMedioDePago(medioDePagoId, clienteId);
     }
 }

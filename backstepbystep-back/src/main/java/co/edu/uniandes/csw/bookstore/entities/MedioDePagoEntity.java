@@ -39,6 +39,7 @@ public class MedioDePagoEntity extends BaseEntity {
      */
     private String tipoCredito;
 
+    private ClienteEntity cliente;
     /**
      * Crea un medio de pago vacío.
      */
@@ -141,6 +142,20 @@ public class MedioDePagoEntity extends BaseEntity {
      */
     public void setTipoCredito(String tipoCredito) {
         this.tipoCredito = tipoCredito;
+    }
+
+    /**
+     * @return the cliente
+     */
+    public ClienteEntity getCliente() {
+        return cliente;
+    }
+
+    /**
+     * @param cliente the cliente to set
+     */
+    public void setCliente(ClienteEntity cliente) {
+        this.cliente = cliente;
     }
 
 }
